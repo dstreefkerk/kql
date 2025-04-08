@@ -3,7 +3,7 @@ name: Repomix Summary Update
 on:
   push:
     branches:
-      - main
+      - master
     paths-ignore:
       - 'repository_context.md'
   workflow_dispatch:
