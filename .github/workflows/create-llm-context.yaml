@@ -25,16 +25,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Run repomix
+      - name: Run repomix and prepend header
         run: |
-          REPO_URL="https://github.com/${{ github.repository }}"
+          HEADER="<!--\nThis file contains a complete list of KQL queries from ${{ github.repositoryUrl }}.\nGenerated automatically using Repomix.\n-->\n\n"
 
           npx repomix --compress --style markdown \
             --no-file-summary \
             --include "*.kql,**/*.kql" \
-            --header-text "This file contains a complete list of KQL queries from ${REPO_URL}." \
-            --output repository_context.md \
-            --style markdown
+            --output _repository_context.md
+
+          echo -e "$HEADER$(cat _repository_context.md)" > repository_context.md
+          rm _repository_context.md
 
       - name: Commit and push if changed
         run: |
