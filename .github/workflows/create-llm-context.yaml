@@ -18,16 +18,18 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.11'
-
-      - name: Install repomix
-        run: pip install repomix
+          node-version: '20'  # or another version if you prefer
 
       - name: Run repomix
-        run: repomix summarize --output llm_context.md
+        run: |
+          npx repomix --compress --style markdown \
+            --no-file-summary --no-directory-structure \
+            --include "*.md,**/*.md" \
+            --ignore CHANGELOG.md,CONTRIBUTING.md,.github/** \
+            --output llm_context.md
 
       - name: Commit and push if changed
         run: |
