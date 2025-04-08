@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // Use Case: Monitoring Azure Sentinel API Poller Health
 // -----------------------------------------------------------------------------
-// https://github.com/dstreefkerk
+// https://github.com/dstreefkerk/kql
 //
 // Purpose:
 // This KQL query is designed to monitor the operational health of API-based 
