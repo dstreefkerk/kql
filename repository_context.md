@@ -51,7 +51,7 @@ SigninLogs/
 // - SentinelHealth table must be enabled and collecting telemetry
 // - Connectors must be configured with ExtendedProperties logging
 //
-// Last Updated: 2025-04-08
+// Last Updated: 08 April 2025
 // -----------------------------------------------------------------------------
 SentinelHealth
 | where Type == "SentinelHealth"
