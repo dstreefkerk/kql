@@ -1,19 +1,21 @@
+<!--
+This file contains a complete list of KQL queries from git://github.com/dstreefkerk/kql.git.
+Generated automatically using Repomix.
+-->
+
 This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
 The content has been processed where content has been compressed (code blocks are separated by ⋮---- delimiter).
 
-================================================================
-Directory Structure
-================================================================
+# Directory Structure
+```
 SentinelHealth/
   SentinelHealth - Get RestApiPoller HealthStatus logs.kql
+```
 
-================================================================
-Files
-================================================================
+# Files
 
-================
-File: SentinelHealth/SentinelHealth - Get RestApiPoller HealthStatus logs.kql
-================
+## File: SentinelHealth/SentinelHealth - Get RestApiPoller HealthStatus logs.kql
+```
 // -----------------------------------------------------------------------------
 // Use Case: Monitoring Azure Sentinel API Poller Health
 // -----------------------------------------------------------------------------
@@ -113,9 +115,4 @@ SentinelHealth
     SentinelResourceType,
     SentinelResourceKind,
     ExtendedProperties
-
-
-
-================================================================
-End of Codebase
-================================================================
+```
