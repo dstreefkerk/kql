@@ -28,21 +28,20 @@ jobs:
       - name: Run repomix
         run: |
           REPO_URL="https://github.com/${{ github.repository }}"
-          HEADER="This file contains a complete list of KQL queries from ${REPO_URL}."
 
           npx repomix --compress --style markdown \
             --no-file-summary \
             --include "*.kql,**/*.kql" \
-            --header-text "$HEADER" \
+            --header-text "This file contains a complete list of KQL queries from ${REPO_URL}." \
             --output repository_context.txt \
             --style plain
 
       - name: Commit and push if changed
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name "Repomix Action Bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add repository_context.txt
           if ! git diff --cached --quiet; then
-            git commit -m "Update repository_context.txt via repomix [skip ci]"
+            git commit -m "Generate+update repository_context.txt via repomix"
             git push
           fi
