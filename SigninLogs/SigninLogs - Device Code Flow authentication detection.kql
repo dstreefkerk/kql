@@ -31,7 +31,7 @@
 //
 // Attribution:
 // Original Sigma rule by Mark Morowczynski '@markmorow' and Bailey Bercik '@baileybercik' 
-// (via Microsoft documentation). KQL adaptation and formatting for SOC use case by [Your Name or Team].
+// KQL adaptation and formatting for SOC use case by Daniel Streefkerk.
 //
 // Reference: https://learn.microsoft.com/en-us/entra/architecture/security-operations-applications#application-authentication-flows
 //
