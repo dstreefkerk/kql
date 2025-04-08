@@ -10,6 +10,8 @@ The content has been processed where content has been compressed (code blocks ar
 ```
 SentinelHealth/
   SentinelHealth - Get RestApiPoller HealthStatus logs.kql
+SigninLogs/
+  SigninLogs - Device Code Flow authentication detection.kql
 ```
 
 # Files
@@ -19,7 +21,7 @@ SentinelHealth/
 // -----------------------------------------------------------------------------
 // Use Case: Monitoring Azure Sentinel API Poller Health
 // -----------------------------------------------------------------------------
-// https://github.com/dstreefkerk
+// https://github.com/dstreefkerk/kql
 //
 // Purpose:
 // This KQL query is designed to monitor the operational health of API-based 
@@ -115,4 +117,74 @@ SentinelHealth
     SentinelResourceType,
     SentinelResourceKind,
     ExtendedProperties
+```
+
+## File: SigninLogs/SigninLogs - Device Code Flow authentication detection.kql
+```
+// -----------------------------------------------------------------------------
+// Use Case: Application Using Device Code Authentication Flow
+// -----------------------------------------------------------------------------
+// https://github.com/dstreefkerk/kql
+//
+// Purpose:
+// This KQL query identifies authentication events using the OAuth 2.0 
+// Device Code Flow—intended for input-constrained devices like smart TVs 
+// or IoT hardware. In non-device scenarios, its use may signal 
+// misconfigured apps or unauthorized access attempts.
+//
+// Problem Statement:
+// Device Code Flow enables user authentication without browser interaction. 
+// When observed outside of legitimate use cases, it could indicate malicious 
+// actors abusing the flow to bypass normal security controls.
+//
+// Key Features:
+// - Filters authentication logs for 'deviceCode' protocol or transfer method
+// - Projects relevant identity, app, location, and device details
+// - Flags suspicious events with explanatory context for SOC triage
+// - Includes MITRE ATT&CK technique mapping for T1078: Valid Accounts
+//
+// Usage Context:
+// Deploy in Microsoft Sentinel as part of identity monitoring analytics. 
+// Use for alerting, hunting, or continuous detection dashboards to catch 
+// suspicious OAuth flows involving the device code mechanism.
+//
+// Requirements:
+// - SigninLogs table must be enabled and available in Sentinel
+// - Logging must capture AuthenticationProtocol and OriginalTransferMethod fields
+//
+// Attribution:
+// Original Sigma rule by Mark Morowczynski '@markmorow' and Bailey Bercik '@baileybercik' 
+// (via Microsoft documentation). KQL adaptation and formatting for SOC use case by [Your Name or Team].
+//
+// Reference: https://learn.microsoft.com/en-us/entra/architecture/security-operations-applications#application-authentication-flows
+//
+// Last Updated: 2025-04-08
+// -----------------------------------------------------------------------------
+SigninLogs
+| where TimeGenerated > ago(1d)
+| where AuthenticationProtocol =~ "deviceCode" 
+    or OriginalTransferMethod =~ "deviceCodeFlow"
+| project TimeGenerated,
+    UserPrincipalName,
+    UserDisplayName,
+    UserId,
+    IPAddress,
+    Location,
+    AppDisplayName,
+    ClientAppUsed,
+    AuthenticationProtocol,
+    OriginalTransferMethod,
+    DeviceDetail,
+    Status,
+    ResourceDisplayName
+| extend AlertDetails = pack(
+    "UserId", UserId,
+    "ClientApp", ClientAppUsed,
+    "AppDisplayName", AppDisplayName,
+    "Protocol", AuthenticationProtocol,
+    "TransferMethod", OriginalTransferMethod,
+    "DeviceInfo", DeviceDetail
+)
+| extend Reason = "Device Code Authentication Flow detected which may indicate unauthorized access if not used with input-constrained devices"
+| extend timestamp = TimeGenerated, AccountCustomEntity = UserPrincipalName, IPCustomEntity = IPAddress
 ```
