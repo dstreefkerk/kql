@@ -34,7 +34,7 @@ jobs:
             --no-file-summary \
             --include "*.kql,**/*.kql" \
             --header-text "$HEADER" \
-            --output repository_context.txt
+            --output repository_context.txt \
             --style plain
 
       - name: Commit and push if changed
