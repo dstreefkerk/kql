@@ -39,6 +39,7 @@ jobs:
       - name: Commit and push if changed
         run: |
           git config user.name "Repomix Action Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add repository_context.md
           if ! git diff --cached --quiet; then
             git commit -m "Generate+update repository_context.md via repomix"
