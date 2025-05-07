@@ -1,0 +1,66 @@
+// -----------------------------------------------------------------------------
+// Use Case: Office 365 Cloud App Security - File Upload Monitoring
+// -----------------------------------------------------------------------------
+// https://github.com/dstreefkerk/kql
+//
+// Purpose:
+// This KQL query identifies files uploaded to cloud storage within Office 365
+// environment and interprets the DLP enforcement actions applied. It provides
+// security analysts with readable field names and accurate interpretation of
+// EnforcementMode values based on Microsoft documentation.
+//
+// Problem Statement:
+// Enforcement actions in Office 365 DLP logs are stored as numeric codes
+// that are difficult to interpret without context. This can lead to misunderstanding
+// of what actions were actually taken on sensitive data, potentially causing
+// security teams to miss critical policy violations or misinterpret events.
+//
+// Key Features:
+// - Translates cryptic EnforcementMode numeric values into readable actions
+// - Preserves original values for reference and auditability
+// - Provides context-aware interpretations for ambiguous enforcement codes
+// - Handles special cases where values have dual meanings depending on context
+// - Uses clear, descriptive column names for better analysis
+// - Sorts results by timestamp for prioritising recent activity
+//
+// Usage Context:
+// Run this query in Microsoft Sentinel to monitor DLP policy enforcement for
+// files uploaded to cloud storage. Use for compliance reporting, security
+// incident investigations, or to validate DLP policy effectiveness.
+//
+// Requirements:
+// - O365_CL custom table populated via Office 365 Management Activity API
+// - Function App "IngestOffice365AuditLogs" configured and running
+//   (https://github.com/sreedharande/IngestOffice365AuditLogs)
+// - DLP policies configured in Microsoft Purview
+//
+// Last Updated: 07 May 2025
+// -----------------------------------------------------------------------------
+O365_CL 
+| where EndpointMetaData_EndpointOperation_s contains "FileUploadedtoCloud" 
+// Rename columns with more descriptive human-readable names
+| project 
+    TimeGenerated = DateTime_t,
+    Operation = EndpointMetaData_EndpointOperation_s,
+    UserEmail = UserId_s,
+    TargetDomain = EndpointMetaData_TargetDomain_s,
+    TargetURL = EndpointMetaData_TargetUrl_s,
+    // Preserve original value for reference
+    EnforcementModeValue = EndpointMetaData_EnforcementMode_d,
+    // Map enforcement mode values to their action names based on official mapping
+    // Note: Values 3 and 4 have context-dependent interpretations
+    EnforcementAction = case(
+        EndpointMetaData_EnforcementMode_d == 0, "None", // 0 = None: No DLP action triggered or policy turned off
+        EndpointMetaData_EnforcementMode_d == 1, "Audit", // 1 = Audit: Logged but no action taken (monitoring only)
+        EndpointMetaData_EnforcementMode_d == 2, "Warn", // 2 = Warn: User warned and can choose to override the block
+        EndpointMetaData_EnforcementMode_d == 3, "Block", // 3 = Block: For endpoint DLP events, activity is blocked (no override)
+        EndpointMetaData_EnforcementMode_d == 4, "Block or JIT Allow", // 4 = Block, or Allow if JIT protection is enabled with "Allow" setting
+        EndpointMetaData_EnforcementMode_d == 5, "Allow", // 5 = Allow: Action permitted but still logged without generating alerts
+        strcat("Unknown (", tostring(EndpointMetaData_EnforcementMode_d), ")")
+    ),
+    ObjectID = ObjectId_s,
+    DeviceName = EndpointMetaData_DeviceName_s,
+    FileExtension = EndpointMetaData_FileExtension_s,
+    FileType = EndpointMetaData_FileType_s
+// Sort most recent events first to prioritise current activity
+| sort by TimeGenerated desc
